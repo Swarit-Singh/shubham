@@ -1,0 +1,24 @@
+import xgboost as xgb
+import numpy as np
+from skimage.util import view_as_windows
+from sklearn.model_selection import train_test_split
+import joblib
+
+# Example: train on 3x3 patches from grayscale images
+patch_size = 3
+X, y = [], []
+for img in your_training_images:  # img: 2D numpy array
+    patches = view_as_windows(img, (patch_size, patch_size))
+    for i in range(patches.shape[0]):
+        for j in range(patches.shape[1]):
+            patch = patches[i, j].flatten()
+            center = patch[len(patch)//2]
+            context = np.delete(patch, len(patch)//2)  # Remove center pixel
+            X.append(context)
+            y.append(center)
+X = np.array(X)
+y = np.array(y)
+X_train, X_val, y_train, y_val = train_test_split(X, y, test_size=0.1)
+model = xgb.XGBRegressor(tree_method="hist", n_estimators=100, max_depth=4)
+model.fit(X_train, y_train)
+joblib.dump(model, "xgb_predictor.pkl")
